@@ -1,10 +1,9 @@
 var express = require("express");
 var bodyParser = require("body-parser");
-
-/// - Create an app
 var app = express();
+var http = require("http").Server(app);
+var io = require("socket.io")(http);
 
-/// - To use static html file
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -21,10 +20,15 @@ app.get("/messages", (request, response) => {
 app.post("/messages", (request, response) => {
   console.log("POST: /messages -- ", request.body);
   messages.push(request.body);
+  io.emit("SOCKET: new message -- ", request.body);
   response.sendStatus(200);
 });
 
+io.on("connection", (socket) => {
+  console.log("SOCKET: -- user is connected");
+});
+
 /// - Listen to the app
-var server = app.listen(3000, () => {
+var server = http.listen(3000, () => {
   console.log("server is listening on port", server.address().port);
 });
